@@ -1,1 +1,1 @@
-agyvahbajb
+print("Hello, World!")
