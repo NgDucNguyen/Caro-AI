@@ -1,43 +1,52 @@
 import math
 from game import winner, is_full, evaluate
 
-def minimax(board, depth, is_maximizing):
+def minimax(board, depth, alpha, beta, is_maximizing):
+    """Thuật toán Minimax có cắt tỉa Alpha-Beta"""
     score = evaluate(board)
 
-    # Dừng nếu có kết quả hoặc hết ô
+    # Dừng khi có kết quả hoặc hết ô trống
     if score != 0 or is_full(board):
         return score
 
-    if is_maximizing:
-        best_score = -math.inf
+    if is_maximizing:  # Lượt của AI (O)
+        max_eval = -math.inf
         for i in range(9):
             if board[i] == " ":
                 board[i] = "O"
-                value = minimax(board, depth + 1, False)
+                eval = minimax(board, depth + 1, alpha, beta, False)
                 board[i] = " "
-                best_score = max(best_score, value)
-        return best_score
-    else:
-        best_score = math.inf
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break  # Cắt tỉa Beta
+        return max_eval
+    else:  # Lượt của người chơi (X)
+        min_eval = math.inf
         for i in range(9):
             if board[i] == " ":
                 board[i] = "X"
-                value = minimax(board, depth + 1, True)
+                eval = minimax(board, depth + 1, alpha, beta, True)
                 board[i] = " "
-                best_score = min(best_score, value)
-        return best_score
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break  # Cắt tỉa Alpha
+        return min_eval
 
 
 def best_move(board):
-    """Tìm nước đi tốt nhất cho AI (O)"""
+    """Tìm nước đi tốt nhất cho AI (O) bằng Minimax + Alpha-Beta"""
     best_score = -math.inf
     move = None
+
     for i in range(9):
         if board[i] == " ":
             board[i] = "O"
-            score = minimax(board, 0, False)
+            score = minimax(board, 0, -math.inf, math.inf, False)
             board[i] = " "
             if score > best_score:
                 best_score = score
                 move = i
+
     return move

@@ -1,118 +1,126 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<title>Launcher</title>
-<style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  margin: 0;
-}
-.card {
-  background: #1c1c1c;
-  padding: 20px;
-  border-radius: 10px;
-  width: 360px;
-}
-h3 {
-  margin: 0 0 10px 0;
-  text-align: center;
-}
-.row {
-  display: flex;
-  align-items: center;
-  margin: 8px 0;
-  gap: 10px;
-}
-label {
-  color: #ccc;
-  flex: 0 0 120px; /* giữ nhãn cố định 120px, căn trái */
-  text-align: left;
-}
-input, select {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #333;
-  background: #222;
-  color: #fff;
-}
-button {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-  background: #2f8cff;
-  color: #fff;
-  cursor: pointer;
-}
-.note {
-  font-size: 12px;
-  color: #aaa;
-  margin-top: 8px;
-  text-align: center;
-}
-</style>
-</head>
-<body>
-<div class="card">
-  <h3>Caro Launcher</h3>
+  <head>
+    <meta charset="utf-8" />
+    <title>Launcher</title>
+    <style>
+      body {
+        font-family: Arial;
+        background: #111;
+        color: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: #1c1c1c;
+        padding: 20px;
+        border-radius: 10px;
+        width: 360px;
+      }
+      h3 {
+        margin: 0 0 10px 0;
+        text-align: center;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        margin: 8px 0;
+        gap: 10px;
+      }
+      label {
+        color: #ccc;
+        flex: 0 0 120px; /* giữ nhãn cố định 120px, căn trái */
+        text-align: left;
+      }
+      input,
+      select {
+        flex: 1;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #333;
+        background: #222;
+        color: #fff;
+      }
+      button {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+        background: #2f8cff;
+        color: #fff;
+        cursor: pointer;
+      }
+      .note {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 8px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h3>Caro Launcher</h3>
 
-  <div class="row">
-    <label>Chế độ</label>
-    <select id="mode">
-      <option value="pvp">Người vs Người</option>
-      <option value="pve">Người vs Máy</option>
-    </select>
-  </div>
+      <div class="row">
+        <label>Chế độ</label>
+        <select id="mode">
+          <option value="pvp">Người vs Người</option>
+          <option value="pve">Người vs Máy</option>
+        </select>
+      </div>
 
-  <div class="row">
-    <label>Kích thước bàn</label>
-    <input id="size" type="number" value="3" min="3" max="10">
-  </div>
+      <div class="row">
+        <label>Kích thước bàn</label>
+        <input id="size" type="number" value="3" min="3" max="10" />
+      </div>
 
-  <div class="row">
-    <label>Độ dài thắng</label>
-    <input id="winlen" type="number" value="3" min="3" max="10">
-  </div>
+      <div class="row">
+        <label>Độ dài thắng</label>
+        <input id="winlen" type="number" value="3" min="3" max="10" />
+      </div>
 
-  <div class="row">
-    <button id="start">Bắt đầu</button>
-  </div>
+      <div class="row">
+        <button id="start">Bắt đầu</button>
+      </div>
 
-  <div class="note">
-    Launcher sẽ mở file <code>ui.py</code> với các tham số bạn chọn.
-  </div>
-</div>
+      <div class="note">
+        Launcher sẽ mở file <code>ui.py</code> với các tham số bạn chọn.
+      </div>
+    </div>
 
-<script>
-function pycall(name, ...args){
-  if (!window.pywebview || !window.pywebview.api) {
-    alert('pywebview API chưa sẵn sàng');
-    return;
-  }
-  return window.pywebview.api[name](...args);
-}
+    <script>
+      function pycall(name, ...args) {
+        if (!window.pywebview || !window.pywebview.api) {
+          alert("pywebview API chưa sẵn sàng");
+          return;
+        }
+        return window.pywebview.api[name](...args);
+      }
 
-document.getElementById('start').addEventListener('click', async ()=>{
-  const mode = document.getElementById('mode').value;
-  const size = parseInt(document.getElementById('size').value) || 3;
-  const winlen = parseInt(document.getElementById('winlen').value) || 3;
-  try {
-    const res = await pycall('start_game', mode, size, winlen);
-    if (!res) alert('No response from launcher API');
-    else if (res.error) alert('Lỗi: ' + res.error);
-    else console.log('Game started');
-  } catch (e) {
-    alert('Call failed: ' + e);
-  }
-});
-</script>
-</body>
+      // Chờ đến khi pywebview sẵn sàng
+      window.addEventListener("pywebviewready", () => {
+        console.log("✅ pywebview API đã sẵn sàng");
+
+        // Sau khi sẵn sàng, mới gắn sự kiện cho nút Bắt đầu
+        document.getElementById("start").addEventListener("click", async () => {
+          const mode = document.getElementById("mode").value;
+          const size = parseInt(document.getElementById("size").value) || 3;
+          const winlen = parseInt(document.getElementById("winlen").value) || 3;
+
+          try {
+            const res = await pycall("start_game", mode, size, winlen);
+            if (!res) alert("Không nhận được phản hồi từ API launcher");
+            else if (res.error) alert("Lỗi: " + res.error);
+            else console.log("Game started!");
+          } catch (e) {
+            alert("Gọi API thất bại: " + e);
+          }
+        });
+      });
+    </script>
+  </body>
 </html>
