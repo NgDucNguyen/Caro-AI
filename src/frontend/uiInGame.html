@@ -1,0 +1,100 @@
+<!-- 
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Caro AI - HTML UI</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#0a1628; color:#fff; display:flex; align-items:flex-start; gap:32px; padding:32px; }
+    .card { background:#fff; color:#111; border-radius:12px; padding:18px; width:300px; box-shadow:0 6px 18px rgba(0,0,0,.3); }
+    .board { display:grid; grid-template-columns: repeat(3,120px); gap:12px; background:#fff3cf; padding:18px; border-radius:12px; }
+    .cell { width:120px; height:120px; display:flex; align-items:center; justify-content:center; font-size:44px; cursor:pointer; border-radius:8px; background:#fff; box-shadow: inset 0 0 0 4px #f0d6a0; }
+    .cell:hover { background:#fff7e6; }
+    .cell.highlight { background:#dbfff4; }
+    button { padding:10px 14px; border:0; border-radius:8px; cursor:pointer; margin-top:8px; }
+    .btn-primary { background:#0b2a66; color:#fff; }
+    .btn-ghost { background:#eee; color:#111; margin-left:8px; }
+    .status { margin-bottom:12px; font-weight:600; }
+    .scoreline { margin-top:12px; font-size:14px; color:#222; }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="board" id="board"></div>
+    <div style="margin-top:12px;">
+      <button class="btn-primary" id="resetBtn">New Game</button>
+      <button class="btn-ghost" id="undoBtn">Undo</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="status" id="status">Loading...</div>
+    <div id="winner" style="color:green;font-weight:700;"></div>
+    <div class="scoreline" id="scores"></div>
+  </div>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const scoresEl = document.getElementById('scores');
+    const winnerEl = document.getElementById('winner');
+
+    function makeBoard() {
+      boardEl.innerHTML = '';
+      for (let i=0;i<9;i++){
+        const c = document.createElement('div');
+        c.className = 'cell';
+        c.dataset.idx = i;
+        c.addEventListener('click', onCellClick);
+        boardEl.appendChild(c);
+      }
+    }
+
+    async function fetchState(){
+      const r = await fetch('/state');
+      return await r.json();
+    }
+
+    async function refresh(){
+      const s = await fetchState();
+      // fill cells
+      for (let i=0;i<9;i++){
+        const c = boardEl.children[i];
+        c.textContent = s.board[i] === ' ' ? '' : s.board[i];
+        c.classList.toggle('highlight', s.highlight_cells.includes(i));
+        c.style.pointerEvents = (s.game_over || !s.player_turn || s.board[i] !== ' ') ? 'none' : 'auto';
+        c.style.opacity = s.board[i] === ' ' ? '1' : '0.95';
+      }
+      statusEl.textContent = s.game_over ? 'Game Over' : (s.player_turn ? 'Your turn (X)' : 'Computer (O)');
+      winnerEl.textContent = s.game_over ? s.winner_text : '';
+      scoresEl.innerHTML = `Player X: ${s.scores.X} &nbsp;&nbsp; Player O: ${s.scores.O} &nbsp;&nbsp; Draws: ${s.scores.D}`;
+    }
+
+    async function onCellClick(ev){
+      const idx = Number(ev.currentTarget.dataset.idx);
+      await fetch('/move', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ index: idx })
+      });
+      // small delay to let AI respond if any
+      setTimeout(refresh, 120);
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', async ()=>{
+      await fetch('/reset', { method: 'POST' });
+      refresh();
+    });
+    document.getElementById('undoBtn').addEventListener('click', async ()=>{
+      await fetch('/undo', { method: 'POST' });
+      refresh();
+    });
+
+    makeBoard();
+    refresh();
+    // poll for external changes
+    setInterval(refresh, 800);
+  </script>
+</body>
+</html>
+-->

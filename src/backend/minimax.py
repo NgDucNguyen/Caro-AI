@@ -1,5 +1,5 @@
 import math
-from game import winner, is_full, evaluate
+from backend.game import winner, is_full, evaluate
 
 def minimax(board, depth, alpha, beta, is_maximizing):
     """Thuật toán Minimax có cắt tỉa Alpha-Beta"""

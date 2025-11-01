@@ -13,11 +13,11 @@ class LauncherApi:
         Called from JS. Spawn new process to run ui.py with CLI args.
         """
         try:
-            ui_py = resource_path('ui.py')
-            if not os.path.exists(ui_py):
+            uiInGame_py = resource_path(os.path.join("uiInGame.py"))
+            if not os.path.exists(uiInGame_py):
                 return {'error': f"ui.py not found in {HERE}"}
 
-            cmd = [sys.executable, ui_py, '--mode', mode, '--size', str(size), '--winlen', str(winlen)]
+            cmd = [sys.executable, uiInGame_py, '--mode', mode, '--size', str(size), '--winlen', str(winlen)]
 
             # Spawn detached so child keeps running when launcher closes
             if os.name == 'nt':
@@ -25,7 +25,7 @@ class LauncherApi:
                 CREATE_NEW_PROCESS_GROUP = 0x00000200
                 DETACHED_PROCESS = 0x00000008
                 creationflags = CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS
-                subprocess.Popen(cmd, cwd=HERE, creationflags=creationflags)
+                subprocess.Popen(cmd, cwd=HERE) #creationflags=creationflags)
             else:
                 # POSIX: start new session
                 subprocess.Popen(cmd, cwd=HERE, start_new_session=True)
@@ -45,5 +45,4 @@ if __name__ == '__main__':
 
     api = LauncherApi()
     webview.create_window('Caro Launcher', html=html, js_api=api, width=420, height=360)
-    # debug=True helps show logs in terminal if something goes wrong
-    webview.start(debug=True)
+    webview.start()
