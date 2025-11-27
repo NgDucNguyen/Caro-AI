@@ -21,6 +21,10 @@ from backend import features
 
 features.init_player_symbols(PLAYER,AI)
 
+if PLAYER == "X":
+    features.player_turn = True
+else:
+    features.player_turn = False
 pygame.init()
 
 # Window

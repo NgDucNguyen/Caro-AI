@@ -29,8 +29,12 @@ def reset_game():
     move_history = []
     game_over = False
     winner_text = ""
-    player_turn = True
     highlight_cells = []
+    
+    if PLAYER == "X":
+        player_turn = True
+    else:
+        player_turn = False
 
 def undo():
     global player_turn, highlight_cells
