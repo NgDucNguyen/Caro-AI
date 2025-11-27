@@ -1,32 +1,35 @@
 import math
 from backend.game import winner, is_full, evaluate
 
-def minimax(board, depth, alpha, beta, is_maximizing):
-    """Thuật toán Minimax có cắt tỉa Alpha-Beta"""
-    score = evaluate(board)
+PLAYER = "X"
+AI = "O" if PLAYER == "X" else "X"
+def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
+    score = evaluate(board,AI,PLAYER)
 
     # Dừng khi có kết quả hoặc hết ô trống
     if score != 0 or is_full(board):
         return score
 
-    if is_maximizing:  # Lượt của AI (O)
+    if is_maximizing:  
+        # Lượt của AI (O)
         max_eval = -math.inf
         for i in range(9):
             if board[i] == " ":
-                board[i] = "O"
-                eval = minimax(board, depth + 1, alpha, beta, False)
+                board[i] = AI
+                eval = minimax(board, depth + 1, alpha, beta, False,AI,PLAYER)
                 board[i] = " "
                 max_eval = max(max_eval, eval)
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     break  # Cắt tỉa Beta
         return max_eval
-    else:  # Lượt của người chơi (X)
+    else:  
+        # Lượt của người chơi (X)
         min_eval = math.inf
         for i in range(9):
             if board[i] == " ":
-                board[i] = "X"
-                eval = minimax(board, depth + 1, alpha, beta, True)
+                board[i] = PLAYER
+                eval = minimax(board, depth + 1, alpha, beta, True,AI,PLAYER)
                 board[i] = " "
                 min_eval = min(min_eval, eval)
                 beta = min(beta, eval)
@@ -35,15 +38,15 @@ def minimax(board, depth, alpha, beta, is_maximizing):
         return min_eval
 
 
-def best_move(board):
+def best_move(board,AI,PLAYER):
     """Tìm nước đi tốt nhất cho AI (O) bằng Minimax + Alpha-Beta"""
     best_score = -math.inf
     move = None
 
     for i in range(9):
         if board[i] == " ":
-            board[i] = "O"
-            score = minimax(board, 0, -math.inf, math.inf, False)
+            board[i] = AI
+            score = minimax(board, 0, -math.inf, math.inf, False,AI,PLAYER)
             board[i] = " "
             if score > best_score:
                 best_score = score

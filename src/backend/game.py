@@ -19,11 +19,11 @@ def is_full(b):
     return all(cell != " " for cell in b)
 
 
-def evaluate(b):
+def evaluate(b,AI,PLAYER):
     """Hàm lượng giá cho Minimax / Alpha-Beta"""
-    if winner(b, "O"):      # AI thắng
+    if winner(b, AI):      # AI thắng
         return 1
-    elif winner(b, "X"):    # Người thắng
+    elif winner(b, PLAYER):    # Người thắng
         return -1
     else:                   # Hòa hoặc chưa kết thúc
         return 0

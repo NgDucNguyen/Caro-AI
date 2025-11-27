@@ -1,10 +1,25 @@
 import pygame, sys, os
+import argparse
+
+# lấy tham số từ Launcher
+parser = argparse.ArgumentParser()
+parser.add_argument("--mode")
+parser.add_argument("--size")
+parser.add_argument("--winlen")
+parser.add_argument("--player",default="X")
+args = parser.parse_args()
+
+PLAYER = args.player.upper()
+AI="O" if PLAYER == "X" else "X"
+
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from backend import features
+
+features.init_player_symbols(PLAYER,AI)
 
 pygame.init()
 
@@ -81,7 +96,7 @@ def draw_panel():
         g = font(20).render(features.winner_text,True,(20,200,80))
         screen.blit(g,(60,230))
     else:
-        cur = "Player X" if features.player_turn else "Computer"
+        cur = f"Player {PLAYER}" if features.player_turn else f"Computer ({AI})"
         g = font(18, "medium").render(f"Turn: {cur}",True,(60,60,60))
         screen.blit(g,(60,230))
 
@@ -99,8 +114,8 @@ def draw_panel():
     title = font(22,"semibold").render("Score",True,TEXT)
     screen.blit(title,(WINDOW_W-320,180))
     st = font(18)
-    screen.blit(st.render(f"Player X: {features.scores['X']}",True,X_COLOR),(WINDOW_W-320,230))
-    screen.blit(st.render(f"Player O: {features.scores['O']}",True,O_COLOR),(WINDOW_W-320,265))
+    screen.blit(st.render(f"Player {PLAYER}: {features.scores[PLAYER]}",True,X_COLOR if PLAYER=="X" else O_COLOR),(WINDOW_W-320,230))
+    screen.blit(st.render(f"Computer ({AI}): {features.scores[AI]}",True,O_COLOR if AI=="O" else X_COLOR),(WINDOW_W-320,265))
     screen.blit(st.render(f"Draws: {features.scores['D']}",True,(60,60,60)),(WINDOW_W-320,300))
 
 def tick():
