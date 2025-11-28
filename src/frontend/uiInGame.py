@@ -22,10 +22,19 @@ from backend import features
 
 #Chon thuat toan AI
 algo = args.algo.lower()
+
 if algo == "ab":
+    features.ALGORITHM_MODE = "alpha"
     features.set_algorithm(True)
-else:
+
+elif algo == "pure":
+    features.ALGORITHM_MODE = "minimax"
     features.set_algorithm(False)
+
+else:
+    # không dùng minimax, random hoàn toàn
+    features.ALGORITHM_MODE = "none"
+
 
 features.init_player_symbols(PLAYER,AI)
 

@@ -12,6 +12,8 @@ game_over = False
 winner_text = ""
 highlight_cells = []
 
+ALGORITHM_MODE = "alpha"   # alpha, minimax, none
+
 #bien thoi gian
 ai_last_think_time = 0.0
 ai_time_log = []
@@ -87,13 +89,22 @@ def apply_player_move(i):
 
 def apply_ai_move():
     """Make AI move (O). Returns move index or None."""
-    global player_turn, game_over, winner_text,ai_last_think_time,ai_total_time
-    
+    global player_turn, game_over, winner_text
+    global ai_time_log,ai_last_think_time,ai_total_time
+    global ALGORITHM_MODE
     if game_over or player_turn:
         return None
     try:
         start = time.time()
-        move = best_move(board,AI,PLAYER)
+        if ALGORITHM_MODE == "none":
+           # Đánh random
+           empties = [i for i, v in enumerate(board) if v == " "]
+           move = random.choice(empties) if empties else None
+
+        else:
+           # Minimax hoặc Alpha-Beta
+           move = best_move(board, AI, PLAYER)
+
         ai_last_think_time = time.time() - start
         ai_time_log.append(ai_last_think_time)
         ai_total_time += ai_last_think_time
