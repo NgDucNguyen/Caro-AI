@@ -129,6 +129,19 @@ def draw_panel():
     screen.blit(st.render(f"Player {PLAYER}: {features.scores[PLAYER]}",True,X_COLOR if PLAYER=="X" else O_COLOR),(WINDOW_W-320,230))
     screen.blit(st.render(f"Computer ({AI}): {features.scores[AI]}",True,O_COLOR if AI=="O" else X_COLOR),(WINDOW_W-320,265))
     screen.blit(st.render(f"Draws: {features.scores['D']}",True,(60,60,60)),(WINDOW_W-320,300))
+    
+    tt = st.render(f"AI time: {features.ai_total_time:.4f}s", True, (120, 120, 120))
+    screen.blit(tt, (WINDOW_W - 320, 335))
+    
+    # LOG nhiều lần đánh của AI
+    log_y = 370
+    screen.blit(st.render("AI Thinking Log:", True, (80,80,80)), (WINDOW_W - 320, log_y))
+    log_y += 30
+
+    for idx, t in enumerate(features.ai_time_log[-8:]):
+        log_line = st.render(f"{idx+1}. {t:.4f}s", True, (100,100,100))
+        screen.blit(log_line, (WINDOW_W - 320, log_y))
+        log_y += 25
 
 def tick():
     # call engine to perform AI move if needed

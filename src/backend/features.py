@@ -12,6 +12,11 @@ game_over = False
 winner_text = ""
 highlight_cells = []
 
+#bien thoi gian
+ai_last_think_time = 0.0
+ai_time_log = []
+ai_total_time = 0.0
+
 #Ký hiệu người chơi Ai mặc định
 PLAYER = "X"
 AI = "O"
@@ -26,6 +31,10 @@ def init_player_symbols(player_symbol, ai_symbol):
 
 def reset_game():
     global board, move_history, game_over, winner_text, player_turn, highlight_cells
+    global ai_time_log,ai_total_time
+    ai_time_log = []
+    ai_total_time = 0.0
+    
     board = [" "] * 9
     move_history = []
     game_over = False
@@ -78,11 +87,17 @@ def apply_player_move(i):
 
 def apply_ai_move():
     """Make AI move (O). Returns move index or None."""
-    global player_turn, game_over, winner_text
+    global player_turn, game_over, winner_text,ai_last_think_time,ai_total_time
+    
     if game_over or player_turn:
         return None
     try:
+        start = time.time()
         move = best_move(board,AI,PLAYER)
+        ai_last_think_time = time.time() - start
+        ai_time_log.append(ai_last_think_time)
+        ai_total_time += ai_last_think_time
+        print(f"[AI] Thinking time: {ai_last_think_time:.5f}s")
     except Exception:
         empties = [i for i,v in enumerate(board) if v == " "]
         move = random.choice(empties) if empties else None
