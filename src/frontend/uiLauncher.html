@@ -83,6 +83,14 @@
         <input id="winlen" type="number" value="3" min="3" max="10" />
       </div>
 
+      <div class="row">
+        <label>Thuật toán AI</label>
+        <select id="algo">
+          <option value="ab">Minimax + AlphaBeta</option>
+          <option value="pure">Minimax thường</option>
+        </select>
+      </div>
+
       <!-- >>> THÊM: lựa chọn người chơi là X hay O -->
       <div class="row">
         <label>Đi quân</label>
@@ -121,8 +129,16 @@
           const winlen = parseInt(document.getElementById("winlen").value) || 3;
 
           const player = document.getElementById("player").value;
+          const algo = document.getElementById("algo").value;
           try {
-            const res = await pycall("start_game", mode, size, winlen, player);
+            const res = await pycall(
+              "start_game",
+              mode,
+              size,
+              winlen,
+              player,
+              algo
+            );
             if (!res) alert("Không nhận được phản hồi từ API launcher");
             else if (res.error) alert("Lỗi: " + res.error);
             else console.log("Game started!");

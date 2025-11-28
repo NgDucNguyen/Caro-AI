@@ -7,6 +7,7 @@ parser.add_argument("--mode")
 parser.add_argument("--size")
 parser.add_argument("--winlen")
 parser.add_argument("--player",default="X")
+parser.add_argument("--algo", default="ab")
 args = parser.parse_args()
 
 PLAYER = args.player.upper()
@@ -18,6 +19,13 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from backend import features
+
+#Chon thuat toan AI
+algo = args.algo.lower()
+if algo == "ab":
+    features.set_algorithm(True)
+else:
+    features.set_algorithm(False)
 
 features.init_player_symbols(PLAYER,AI)
 

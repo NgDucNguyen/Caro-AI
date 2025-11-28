@@ -1,6 +1,7 @@
 import pygame, sys, time, random, os
 from backend.game import winner, is_full
 from backend.minimax import best_move
+import backend.minimax as minimax_engine
 
 # Game state
 board = [" "] * 9
@@ -104,3 +105,6 @@ def apply_ai_move():
 
     player_turn = True
     return move
+
+def set_algorithm(use_ab: bool):
+    minimax_engine.USE_ALPHABETA = use_ab

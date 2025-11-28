@@ -1,8 +1,11 @@
 import math
 from backend.game import winner, is_full, evaluate
 
+USE_ALPHABETA = True #Mặc định bật 
+
 PLAYER = "X"
 AI = "O" if PLAYER == "X" else "X"
+
 def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
     score = evaluate(board,AI,PLAYER)
 
@@ -37,6 +40,31 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
                     break  # Cắt tỉa Alpha
         return min_eval
 
+# minimax ko có alpha-beta
+def minimax_noAB(board,is_maximizing,AI,PLAYER):
+    score = evaluate(board,AI,PLAYER)
+    
+    if score != 0 or is_full(board):
+        return score
+    
+    if is_maximizing:
+        best = -math.inf
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = AI
+                val = minimax_noAB(board,False,AI,PLAYER)
+                board[i] = " "
+                best = max(best,val)
+        return best
+    else:
+        best = math.inf
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = PLAYER
+                val = minimax_noAB(board,True,AI,PLAYER)
+                board[i] = " "
+                best = min(best,val)
+        return best
 
 def best_move(board,AI,PLAYER):
     """Tìm nước đi tốt nhất cho AI (O) bằng Minimax + Alpha-Beta"""
@@ -46,8 +74,14 @@ def best_move(board,AI,PLAYER):
     for i in range(9):
         if board[i] == " ":
             board[i] = AI
-            score = minimax(board, 0, -math.inf, math.inf, False,AI,PLAYER)
+            
+            if USE_ALPHABETA:
+                score = minimax(board, 0, -math.inf, math.inf, False,AI,PLAYER)
+            else:
+                score = minimax_noAB(board,False,AI,PLAYER)
+                
             board[i] = " "
+            
             if score > best_score:
                 best_score = score
                 move = i
