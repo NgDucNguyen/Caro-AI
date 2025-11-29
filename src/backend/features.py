@@ -23,6 +23,10 @@ ai_total_time = 0.0
 PLAYER = "X"
 AI = "O"
 
+
+def get_current_mark():
+    return PLAYER if player_turn else AI
+
 # Khởi tạo kí hiệu
 def init_player_symbols(player_symbol, ai_symbol):
     global PLAYER, AI
@@ -43,10 +47,7 @@ def reset_game():
     winner_text = ""
     highlight_cells = []
     
-    if PLAYER == "X":
-        player_turn = True
-    else:
-        player_turn = False
+    player_turn = True
 
 def undo():
     global player_turn, highlight_cells
@@ -71,20 +72,23 @@ def apply_player_move(i):
     global player_turn, game_over, winner_text
     if game_over or board[i] != " ":
         return False
-    board[i] = PLAYER
+    
+    # X hoac O tuy luot
+    mark = get_current_mark()
+    board[i] = mark
     move_history.append(i)
 
-    if winner(board, PLAYER):
-        highlight_cells[:] = get_winning_cells(board, PLAYER)
-        winner_text = f"You ({PLAYER}) win!"
+    if winner(board, mark):
+        highlight_cells[:] = get_winning_cells(board, mark)
+        winner_text = f"({mark}) win!"
         game_over = True
-        scores[PLAYER] += 1
+        scores[mark] += 1
     elif is_full(board):
         winner_text = "Draw!"
         game_over = True
         scores["D"] += 1
     else:
-        player_turn = False
+        player_turn = not player_turn
     return True
 
 def apply_ai_move():

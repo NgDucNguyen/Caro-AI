@@ -10,6 +10,8 @@ parser.add_argument("--player",default="X")
 parser.add_argument("--algo", default="ab")
 args = parser.parse_args()
 
+MODE = args.mode.lower() # pvp or pve
+
 PLAYER = args.player.upper()
 AI="O" if PLAYER == "X" else "X"
 
@@ -35,6 +37,9 @@ else:
     # không dùng minimax, random hoàn toàn
     features.ALGORITHM_MODE = "none"
 
+# Nếu chơi PVP thi tat AI
+if MODE == "pvp":
+    features.ALGORITHM_MODE = "none"
 
 features.init_player_symbols(PLAYER,AI)
 
@@ -117,8 +122,12 @@ def draw_panel():
         g = font(20).render(features.winner_text,True,(20,200,80))
         screen.blit(g,(60,230))
     else:
-        cur = f"Player {PLAYER}" if features.player_turn else f"Computer ({AI})"
-        g = font(18, "medium").render(f"Turn: {cur}",True,(60,60,60))
+        if MODE == "pvp":
+            curr = f"Player { 'X' if features.player_turn else 'O'}"
+        else:
+            curr = f"Player {PLAYER}" if features.player_turn else f"Computer ({AI})"
+        
+        g = font(18, "medium").render(f"Turn: {curr}",True,(60,60,60))
         screen.blit(g,(60,230))
 
     def btn(x,y,w,h,text,active=True):
@@ -153,6 +162,10 @@ def draw_panel():
         log_y += 25
 
 def tick():
+    # PVP ko co AI
+    if MODE == "pvp":
+        return
+    
     # call engine to perform AI move if needed
     if not features.game_over and not features.player_turn:
         pygame.time.delay(300)
@@ -177,12 +190,23 @@ def main():
                     if 300<=y<=355: features.reset_game()
                     if 370<=y<=425 and (len(features.move_history) > 0) and (not features.game_over) and features.player_turn: features.undo()
                 # Board click
-                if not features.game_over and features.player_turn:
-                    for i in range(9):
-                        r=i//3;c=i%3
-                        rect=pygame.Rect(board_x+c*cell_size,board_y+r*cell_size,cell_size,cell_size)
-                        if rect.collidepoint((x,y)) and features.board[i]==" ":
-                            features.apply_player_move(i)
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    x,y = e.pos
+                    
+                    #PvP: X va O deu duoc click
+                    if MODE == "pvp":
+                        allow_click = not features.game_over
+                    else:
+                        #PvE chi dinh nguoi choi click
+                        allow_click = (not features.game_over and features.player_turn)
+                    
+                    if allow_click:
+                        for i in range(9):
+                            r = i // 3
+                            c = i % 3
+                            rect = pygame.Rect(board_x + c*cell_size, board_y + r*cell_size, cell_size, cell_size)
+                            if rect.collidepoint((x,y)) and features.board[i] == " ":
+                                features.apply_player_move(i)
         tick()
 
 if __name__=="__main__":
