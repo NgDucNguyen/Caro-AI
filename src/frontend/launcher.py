@@ -44,5 +44,5 @@ if __name__ == '__main__':
             html = f.read()
 
     api = LauncherApi()
-    webview.create_window('Caro Launcher', html=html, js_api=api, width=420, height=360)
+    webview.create_window('Caro Launcher', html=html, js_api=api, width=420, height=440)
     webview.start()
