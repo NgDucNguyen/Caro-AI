@@ -2,6 +2,7 @@ import math
 from backend.game import winner, is_full, evaluate
 
 USE_ALPHABETA = True #Mặc định bật 
+MAX_DEPTH = None
 
 PLAYER = "X"
 AI = "O" if PLAYER == "X" else "X"
@@ -9,8 +10,8 @@ AI = "O" if PLAYER == "X" else "X"
 def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
     score = evaluate(board,AI,PLAYER)
 
-    # Dừng khi có kết quả hoặc hết ô trống
-    if score != 0 or is_full(board):
+    # Dừng khi có kết quả, hết ô trống, hoặc đạt độ sâu tối đa
+    if score != 0 or is_full(board) or (MAX_DEPTH is not None and depth >= MAX_DEPTH):
         return score
 
     if is_maximizing:  
@@ -41,29 +42,29 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
         return min_eval
 
 # minimax ko có alpha-beta
-def minimax_noAB(board,is_maximizing,AI,PLAYER):
-    score = evaluate(board,AI,PLAYER)
-    
-    if score != 0 or is_full(board):
+def minimax_noAB(board, is_maximizing, AI, PLAYER, depth=0):
+    score = evaluate(board, AI, PLAYER)
+
+    if score != 0 or is_full(board) or (MAX_DEPTH is not None and depth >= MAX_DEPTH):
         return score
-    
+
     if is_maximizing:
         best = -math.inf
         for i in range(9):
             if board[i] == " ":
                 board[i] = AI
-                val = minimax_noAB(board,False,AI,PLAYER)
+                val = minimax_noAB(board, False, AI, PLAYER, depth + 1)
                 board[i] = " "
-                best = max(best,val)
+                best = max(best, val)
         return best
     else:
         best = math.inf
         for i in range(9):
             if board[i] == " ":
                 board[i] = PLAYER
-                val = minimax_noAB(board,True,AI,PLAYER)
+                val = minimax_noAB(board, True, AI, PLAYER, depth + 1)
                 board[i] = " "
-                best = min(best,val)
+                best = min(best, val)
         return best
 
 def best_move(board,AI,PLAYER):
@@ -76,10 +77,10 @@ def best_move(board,AI,PLAYER):
             board[i] = AI
             
             if USE_ALPHABETA:
-                score = minimax(board, 0, -math.inf, math.inf, False,AI,PLAYER)
+               score = minimax(board, 0, -math.inf, math.inf, False, AI, PLAYER)
             else:
-                score = minimax_noAB(board,False,AI,PLAYER)
-                
+               score = minimax_noAB(board, False, AI, PLAYER, 0)
+               
             board[i] = " "
             
             if score > best_score:

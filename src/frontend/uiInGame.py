@@ -8,12 +8,15 @@ parser.add_argument("--size")
 parser.add_argument("--winlen")
 parser.add_argument("--player",default="X")
 parser.add_argument("--algo", default="ab")
+parser.add_argument("--depth", default="4")
+
 args = parser.parse_args()
 
 MODE = args.mode.lower() # pvp or pve
 
 PLAYER = args.player.upper()
 AI="O" if PLAYER == "X" else "X"
+DEPTH = int(args.depth)
 
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,6 +39,8 @@ elif algo == "pure":
 else:
     # không dùng minimax, random hoàn toàn
     features.ALGORITHM_MODE = "none"
+    
+features.set_search_depth(DEPTH) 
 
 # Nếu chơi PVP thi tat AI
 if MODE == "pvp":

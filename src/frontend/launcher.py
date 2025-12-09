@@ -8,7 +8,7 @@ def resource_path(rel):
     return os.path.join(HERE, rel)
 
 class LauncherApi:
-    def start_game(self, mode, size, winlen,player,algo):
+    def start_game(self, mode, size, winlen,player,algo,depth):
         """
         Called from JS. Spawn new process to run ui.py with CLI args.
         """
@@ -17,7 +17,7 @@ class LauncherApi:
             if not os.path.exists(uiInGame_py):
                 return {'error': f"ui.py not found in {HERE}"}
 
-            cmd = [sys.executable, uiInGame_py, '--mode', mode, '--size', str(size), '--winlen', str(winlen), '--player',player, '--algo',algo]
+            cmd = [sys.executable, uiInGame_py, '--mode', mode, '--size', str(size), '--winlen', str(winlen), '--player',player, '--algo',algo,'--depth',str(depth)]
 
             # Spawn detached so child keeps running when launcher closes
             if os.name == 'nt':

@@ -84,6 +84,11 @@
       </div>
 
       <div class="row">
+        <label>Depth</label>
+        <input id="depth" type="number" value="4" min="1" max="10" />
+      </div>
+
+      <div class="row">
         <label>Thuật toán AI</label>
         <select id="algo">
           <option value="ab">Minimax + AlphaBeta</option>
@@ -131,6 +136,8 @@
 
           const player = document.getElementById("player").value;
           const algo = document.getElementById("algo").value;
+          const depth = parseInt(document.getElementById("depth").value) || 4;
+
           try {
             const res = await pycall(
               "start_game",
@@ -138,7 +145,8 @@
               size,
               winlen,
               player,
-              algo
+              algo,
+              depth
             );
             if (!res) alert("Không nhận được phản hồi từ API launcher");
             else if (res.error) alert("Lỗi: " + res.error);

@@ -138,3 +138,12 @@ def apply_ai_move():
 
 def set_algorithm(use_ab: bool):
     minimax_engine.USE_ALPHABETA = use_ab
+    
+def set_search_depth(depth: int):
+    """
+    Đặt độ sâu tối đa cho minimax (None hoặc số dương).
+    """
+    if depth is not None and depth > 0:
+        minimax_engine.MAX_DEPTH = depth
+    else:
+        minimax_engine.MAX_DEPTH = None
