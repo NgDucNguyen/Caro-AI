@@ -4,7 +4,10 @@ from backend.minimax import best_move
 import backend.minimax as minimax_engine
 
 # Game state
-board = [" "] * 9
+BOARD_N = 3
+WIN_LENGTH = 3
+
+board = [" "] * (BOARD_N * BOARD_N)
 move_history = []
 scores = {"X": 0, "O": 0, "D": 0}
 player_turn = True
@@ -33,7 +36,27 @@ def init_player_symbols(player_symbol, ai_symbol):
     PLAYER = player_symbol
     AI = ai_symbol
 
+def init_board(size,winlen):
+    """
+    Khởi tạo lại bàn cờ N×N và cấu hình cho module game.
+    Được gọi từ uiInGame.py sau khi đọc tham số từ launcher.
+    """
+    global board, move_history, game_over, winner_text, highlight_cells
+    global BOARD_N, WIN_LENGTH, player_turn
 
+    BOARD_N = size
+    WIN_LENGTH = winlen
+
+    board = [" "] * (BOARD_N * BOARD_N)
+    move_history = []
+    game_over = False
+    winner_text = ""
+    highlight_cells = []
+    player_turn = True
+
+    # Cập nhật cho game.py
+    import backend.game as game_module
+    game_module.set_board_params(BOARD_N, WIN_LENGTH)
 
 def reset_game():
     global board, move_history, game_over, winner_text, player_turn, highlight_cells
@@ -41,7 +64,7 @@ def reset_game():
     ai_time_log = []
     ai_total_time = 0.0
     
-    board = [" "] * 9
+    board = [" "] * (BOARD_N * BOARD_N)
     move_history = []
     game_over = False
     winner_text = ""
@@ -61,11 +84,48 @@ def undo():
         player_turn = True
 
 def get_winning_cells(b, mark):
-    lines = [(0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6)]
-    for a,b_,c in lines:
-        if b[a] == b[b_] == b[c] == mark:
-            return [a,b_,c]
+    """
+    Trả về danh sách index các ô tạo thành chuỗi WIN_LENGTH thắng.
+    Nếu không có, trả về [].
+    """
+    n = BOARD_N
+    k = WIN_LENGTH
+
+    def idx(r, c):
+        return r * n + c
+
+    directions = [
+        (1, 0),
+        (0, 1),
+        (1, 1),
+        (1, -1),
+    ]
+
+    for r in range(n):
+        for c in range(n):
+            if b[idx(r, c)] != mark:
+                continue
+
+            for dr, dc in directions:
+                end_r = r + (k - 1) * dr
+                end_c = c + (k - 1) * dc
+                if not (0 <= end_r < n and 0 <= end_c < n):
+                    continue
+
+                cells = []
+                ok = True
+                for step in range(k):
+                    rr = r + step * dr
+                    cc = c + step * dc
+                    if b[idx(rr, cc)] != mark:
+                        ok = False
+                        break
+                    cells.append(idx(rr, cc))
+
+                if ok:
+                    return cells
     return []
+
 
 def apply_player_move(i):
     """Attempt to place X at i. Returns True if move accepted."""

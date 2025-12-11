@@ -17,13 +17,17 @@ MODE = args.mode.lower() # pvp or pve
 PLAYER = args.player.upper()
 AI="O" if PLAYER == "X" else "X"
 DEPTH = int(args.depth)
-
+BOARD_N = int(args.size)
+WIN_LEN = int(args.winlen)
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from backend import features
+
+# Khởi tạo bàn cờ N×N cho backend
+features.init_board(BOARD_N, WIN_LEN)
 
 #Chon thuat toan AI
 algo = args.algo.lower()
@@ -72,10 +76,42 @@ BTN_BG = (10,15,25)
 BTN_BG_HOVER = (40,50,70)
 
 # Board settings
-BOARD_N = 3
-cell_size = 150
-board_x = (WINDOW_W//2 - cell_size*BOARD_N//2)
-board_y = 180
+# Board settings - căn giữa giữa 2 panel và chừa khoảng trống 2 bên
+# Board settings - căn giữa cả ngang lẫn dọc giữa 2 panel
+
+LEFT_PANEL_X = 40
+LEFT_PANEL_W = 300
+RIGHT_PANEL_X = WINDOW_W - 340
+RIGHT_PANEL_W = 300
+
+# vùng trống theo chiều ngang giữa 2 panel
+free_width = RIGHT_PANEL_X - (LEFT_PANEL_X + LEFT_PANEL_W)
+
+# khoảng trống trên dưới muốn chừa cho title và phần dưới
+TOP_MARGIN = 150   # khoảng từ mép trên window xuống vùng chứa board
+BOTTOM_MARGIN = 40 # khoảng từ board đến mép dưới window
+
+# max kích thước board theo chiều cao
+free_height = WINDOW_H - TOP_MARGIN - BOTTOM_MARGIN
+
+# muốn chừa margin 2 bên trong vùng trống ngang cho board đỡ dính panel
+INNER_MARGIN_X = 20
+max_board_by_width = free_width - 2 * INNER_MARGIN_X
+
+# chọn kích thước board sao cho vừa cả ngang lẫn dọc
+max_board_pixels = min(max_board_by_width, free_height)
+
+# tính kích thước ô
+cell_size = max(40, min(150, max_board_pixels // BOARD_N))
+
+board_width = cell_size * BOARD_N
+board_height = board_width  # vì ô vuông
+
+# căn giữa theo chiều ngang trong free_width
+board_x = LEFT_PANEL_X + LEFT_PANEL_W + (free_width - board_width) // 2
+
+# căn giữa theo chiều dọc trong khoảng TOP_MARGIN..WINDOW_H-BOTTOM_MARGIN
+board_y = TOP_MARGIN + (free_height - board_height) // 2
 
 clock = pygame.time.Clock()
 
@@ -94,29 +130,39 @@ def gradient():
         pygame.draw.line(screen, (int(r),int(g),int(b)), (0,i), (WINDOW_W,i))
 
 def draw_board():
-    pygame.draw.rect(screen, BOARD_BG, (board_x-10, board_y-10, cell_size*3+20, cell_size*3+20), border_radius=12)
-    for i,v in enumerate(features.board):
-        r = i//3; c = i%3
-        x = board_x + c*cell_size
-        y = board_y + r*cell_size
-        rect = pygame.Rect(x,y,cell_size,cell_size)
+    pygame.draw.rect(
+        screen,
+        BOARD_BG,
+        (board_x - 10, board_y - 10, cell_size * BOARD_N + 20, cell_size * BOARD_N + 20),
+        border_radius=12
+    )
+    for i, v in enumerate(features.board):
+        r = i // BOARD_N
+        c = i % BOARD_N
+        x = board_x + c * cell_size
+        y = board_y + r * cell_size
+        rect = pygame.Rect(x, y, cell_size, cell_size)
 
         mx, my = pygame.mouse.get_pos()
         if rect.collidepoint((mx, my)) and features.board[i] == " ":
             pygame.draw.rect(screen, (255, 235, 120), rect)
         elif i in features.highlight_cells:
-            pygame.draw.rect(screen, (210,255,240), rect)
+            pygame.draw.rect(screen, (210, 255, 240), rect)
         else:
             pygame.draw.rect(screen, BOARD_BG, rect)
-        pygame.draw.rect(screen, (240,200,120), rect, 4)
+        pygame.draw.rect(screen, (240, 200, 120), rect, 4)
 
-        cx,cy = x+cell_size//2, y+cell_size//2
+        cx, cy = x + cell_size // 2, y + cell_size // 2
+        mark_thickness = max(2, cell_size // 8)
+        off = cell_size // 3
+        radius = cell_size // 3
+
         if v == "X":
-            off = 40
-            pygame.draw.line(screen, X_COLOR,(cx-off,cy-off),(cx+off,cy+off),10)
-            pygame.draw.line(screen, X_COLOR,(cx+off,cy-off),(cx-off,cy+off),10)
+            pygame.draw.line(screen, X_COLOR, (cx - off, cy - off), (cx + off, cy + off), mark_thickness)
+            pygame.draw.line(screen, X_COLOR, (cx + off, cy - off), (cx - off, cy + off), mark_thickness)
         elif v == "O":
-            pygame.draw.circle(screen, O_COLOR, (cx,cy), 50, 10)
+            pygame.draw.circle(screen, O_COLOR, (cx, cy), radius, mark_thickness)
+
 
 def draw_panel():
     pygame.draw.rect(screen, CARD,(40,160,300,450), border_radius=18)
@@ -187,31 +233,41 @@ def main():
         pygame.display.update()
 
         for e in pygame.event.get():
-            if e.type==pygame.QUIT: pygame.quit(); sys.exit()
-            if e.type==pygame.MOUSEBUTTONDOWN and e.button==1:
-                x,y = e.pos
+            if e.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                x, y = e.pos
                 # Buttons
-                if 60<=x<=320:
-                    if 300<=y<=355: features.reset_game()
-                    if 370<=y<=425 and (len(features.move_history) > 0) and (not features.game_over) and features.player_turn: features.undo()
-                # Board click
-                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                    x,y = e.pos
-                    
-                    #PvP: X va O deu duoc click
-                    if MODE == "pvp":
-                        allow_click = not features.game_over
-                    else:
-                        #PvE chi dinh nguoi choi click
-                        allow_click = (not features.game_over and features.player_turn)
-                    
-                    if allow_click:
-                        for i in range(9):
-                            r = i // 3
-                            c = i % 3
-                            rect = pygame.Rect(board_x + c*cell_size, board_y + r*cell_size, cell_size, cell_size)
-                            if rect.collidepoint((x,y)) and features.board[i] == " ":
-                                features.apply_player_move(i)
+                if 60 <= x <= 320:
+                    if 300 <= y <= 355:
+                        features.reset_game()
+                    if 370 <= y <= 425 and (len(features.move_history) > 0) and (not features.game_over) and features.player_turn:
+                        features.undo()
+
+                # PvP: X và O đều được click
+                if MODE == "pvp":
+                    allow_click = not features.game_over
+                else:
+                    # PvE: chỉ người chơi được click
+                    allow_click = (not features.game_over and features.player_turn)
+
+                if allow_click:
+                    total_cells = len(features.board)
+                    for i in range(total_cells):
+                        r = i // BOARD_N
+                        c = i % BOARD_N
+                        rect = pygame.Rect(
+                            board_x + c * cell_size,
+                            board_y + r * cell_size,
+                            cell_size,
+                            cell_size
+                        )
+                        if rect.collidepoint((x, y)) and features.board[i] == " ":
+                            features.apply_player_move(i)
+                            break
+
         tick()
 
 if __name__=="__main__":

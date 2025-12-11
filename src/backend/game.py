@@ -1,16 +1,50 @@
 # --- Các hàm xử lý bàn cờ Tic Tac Toe ---
+BOARD_N = 3
+WIN_LENGTH = 3
+
+def set_board_params(n,winlen):
+    global BOARD_N,WIN_LENGTH
+    BOARD_N = n
+    WIN_LENGTH = winlen
 
 def winner(b, player):
     """Kiểm tra người thắng"""
-    win_states = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],  # hàng ngang
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],  # cột dọc
-        [0, 4, 8], [2, 4, 6]              # đường chéo
+    n = BOARD_N
+    k = WIN_LENGTH
+    
+    # helper lấy index 1D từ (r, c)
+    def idx(r, c):
+        return r * n + c
+
+    directions = [
+        (1, 0),   # dọc xuống
+        (0, 1),   # ngang phải
+        (1, 1),   # chéo xuống phải
+        (1, -1),  # chéo xuống trái
     ]
-    for state in win_states:
-        # kiểm tra 3 ô cùng là ký hiệu của player và không trống
-        if b[state[0]] == b[state[1]] == b[state[2]] == player and b[state[0]] != " ":
-            return True
+
+    for r in range(n):
+        for c in range(n):
+            if b[idx(r, c)] != player:
+                continue
+
+            for dr, dc in directions:
+                # Kiểm tra điểm kết thúc có nằm trong bàn không
+                end_r = r + (k - 1) * dr
+                end_c = c + (k - 1) * dc
+                if not (0 <= end_r < n and 0 <= end_c < n):
+                    continue
+
+                ok = True
+                for step in range(k):
+                    rr = r + step * dr
+                    cc = c + step * dc
+                    if b[idx(rr, cc)] != player:
+                        ok = False
+                        break
+
+                if ok:
+                    return True
     return False
 
 
@@ -28,12 +62,73 @@ def evaluate(b,AI,PLAYER):
     else:                   # Hòa hoặc chưa kết thúc
         return 0
 
+def heuristic_score(b, AI, PLAYER):
+    """
+    Heuristic cho bàn N×N:
+    + Cộng điểm cho các chuỗi gần thắng của AI
+    + Trừ điểm cho chuỗi gần thắng của người chơi
+    """
+    # Nếu bạn đã có biến BOARD_N, WIN_LENGTH ở đầu file thì dùng lại
+    try:
+        n = BOARD_N
+        k = WIN_LENGTH
+    except NameError:
+        # fallback cho 3x3
+        n = 3
+        k = 3
+
+    def idx(r, c):
+        return r * n + c
+
+    directions = [
+        (1, 0),   # dọc
+        (0, 1),   # ngang
+        (1, 1),   # chéo xuống phải
+        (1, -1),  # chéo xuống trái
+    ]
+
+    score = 0
+
+    for r in range(n):
+        for c in range(n):
+            for dr, dc in directions:
+                end_r = r + (k - 1) * dr
+                end_c = c + (k - 1) * dc
+                if not (0 <= end_r < n and 0 <= end_c < n):
+                    continue
+
+                cells = []
+                for step in range(k):
+                    rr = r + step * dr
+                    cc = c + step * dc
+                    cells.append(idx(rr, cc))
+
+                line = [b[p] for p in cells]
+
+                # Nếu cả AI và PLAYER cùng có trong đoạn này thì bỏ
+                if AI in line and PLAYER in line:
+                    continue
+
+                ai_cnt = line.count(AI)
+                pl_cnt = line.count(PLAYER)
+
+                if ai_cnt > 0 and pl_cnt == 0:
+                    # càng nhiều quân AI trong 1 đoạn k ô càng mạnh
+                    score += 10 ** ai_cnt
+                elif pl_cnt > 0 and ai_cnt == 0:
+                    # càng nhiều quân người chơi trong 1 đoạn càng nguy hiểm
+                    score -= 10 ** pl_cnt
+
+    return score
+
 
 def print_board(b):
     """In bàn cờ ra console (hỗ trợ debug)"""
+    n = BOARD_N
     print("\n")
-    for i in range(3):
-        print(" " + " | ".join(b[i*3:(i+1)*3]))
-        if i < 2:
-            print("---+---+---")
+    for i in range(n):
+        row = b[i*n:(i+1)*n]
+        print(" " + " | ".join(row))
+        if i < n-1:
+            print("---+" * (n-1) + "---")
     print("\n")
