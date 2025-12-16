@@ -70,7 +70,7 @@ def reset_game():
     winner_text = ""
     highlight_cells = []
     
-    player_turn = True
+    player_turn = (PLAYER=="X")
 
 def undo():
     global player_turn, highlight_cells

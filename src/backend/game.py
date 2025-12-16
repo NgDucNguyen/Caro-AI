@@ -114,10 +114,10 @@ def heuristic_score(b, AI, PLAYER):
 
                 if ai_cnt > 0 and pl_cnt == 0:
                     # càng nhiều quân AI trong 1 đoạn k ô càng mạnh
-                    score += 10 ** ai_cnt
+                    score += ai_cnt * ai_cnt * 10
                 elif pl_cnt > 0 and ai_cnt == 0:
                     # càng nhiều quân người chơi trong 1 đoạn càng nguy hiểm
-                    score -= 10 ** pl_cnt
+                    score -= pl_cnt * pl_cnt * 10
 
     return score
 

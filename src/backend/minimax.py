@@ -7,7 +7,7 @@ MAX_DEPTH = None
 PLAYER = "X"
 AI = "O" if PLAYER == "X" else "X"
 
-def get_candidate_moves(board, radius=2):
+def get_candidate_moves(board, radius=1):
     """
     Chỉ xét các ô trống nằm gần (trong vòng 'radius') những ô đã đánh
     để giảm số lượng nhánh cần duyệt ⇒ đỡ lag.
@@ -57,10 +57,16 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
             board[i] = AI
             eval = minimax(board, depth + 1, alpha, beta, False, AI, PLAYER)
             board[i] = " "
+
             max_eval = max(max_eval, eval)
             alpha = max(alpha, eval)
+
+            # 🔥 AI thắng chắc thì dừng
+            if max_eval >= 1:
+                return max_eval
+
             if beta <= alpha:
-                break  # Cắt tỉa Beta
+                break
         return max_eval
 
     else:  
@@ -105,25 +111,27 @@ def minimax_noAB(board, is_maximizing, AI, PLAYER, depth=0):
         return best
 
 def best_move(board, AI, PLAYER):
-    """Tìm nước đi tốt nhất cho AI bằng Minimax + (tùy chọn) Alpha-Beta"""
-    best_score = -math.inf
-    move = None
+    import math
+    scored_moves = []
 
-    # 1) Ưu tiên nước thắng ngay nếu có
+    # 1️⃣ Chấm điểm nhanh từng nước bằng heuristic
     for i in get_candidate_moves(board):
         if board[i] != " ":
             continue
+
         board[i] = AI
-        if winner(board, AI):
-            board[i] = " "
-            return i
+        h = heuristic_score(board, AI, PLAYER)
         board[i] = " "
+        scored_moves.append((h, i))
 
-    # 2) Nếu không có nước thắng ngay, dùng minimax
-    for i in get_candidate_moves(board):
-        if board[i] != " ":
-            continue
+    # 2️⃣ Duyệt nước tốt trước (RẤT QUAN TRỌNG)
+    scored_moves.sort(reverse=True)
 
+    best_score = -math.inf
+    best_move = None
+
+    # 3️⃣ Gọi minimax theo thứ tự đã sắp
+    for _, i in scored_moves:
         board[i] = AI
 
         if USE_ALPHABETA:
@@ -135,6 +143,11 @@ def best_move(board, AI, PLAYER):
 
         if score > best_score:
             best_score = score
-            move = i
+            best_move = i
 
-    return move
+        # 4️⃣ CẮT SỚM nếu thắng chắc
+        if best_score >= 1:
+            break
+
+    return best_move
+

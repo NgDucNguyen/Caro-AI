@@ -44,7 +44,14 @@ else:
     # không dùng minimax, random hoàn toàn
     features.ALGORITHM_MODE = "none"
     
-features.set_search_depth(DEPTH) 
+# ⚡ Depth động theo kích thước bàn
+if BOARD_N <= 3:
+    features.set_search_depth(9)
+elif BOARD_N <= 5:
+    features.set_search_depth(4)
+else:
+    features.set_search_depth(3)
+
 
 # Nếu chơi PVP thi tat AI
 if MODE == "pvp":
