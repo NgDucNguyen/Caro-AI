@@ -113,11 +113,15 @@ def heuristic_score(b, AI, PLAYER):
                 pl_cnt = line.count(PLAYER)
 
                 if ai_cnt > 0 and pl_cnt == 0:
-                    # càng nhiều quân AI trong 1 đoạn k ô càng mạnh
-                    score += ai_cnt * ai_cnt * 10
+                    if ai_cnt == WIN_LENGTH:
+                        return 10_000_000
+                    score += 10 ** ai_cnt
+
                 elif pl_cnt > 0 and ai_cnt == 0:
-                    # càng nhiều quân người chơi trong 1 đoạn càng nguy hiểm
-                    score -= pl_cnt * pl_cnt * 10
+                    if pl_cnt == WIN_LENGTH:
+                        return -10_000_000
+                    score -= 10 ** pl_cnt
+
 
     return score
 

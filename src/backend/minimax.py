@@ -1,5 +1,5 @@
 import math
-from backend.game import winner, is_full, evaluate, heuristic_score
+from backend.game import winner, is_full, evaluate, heuristic_score, WIN_LENGTH
 
 USE_ALPHABETA = True #Mặc định bật 
 MAX_DEPTH = None
@@ -7,22 +7,22 @@ MAX_DEPTH = None
 PLAYER = "X"
 AI = "O" if PLAYER == "X" else "X"
 
-def get_candidate_moves(board, radius=1):
-    """
-    Chỉ xét các ô trống nằm gần (trong vòng 'radius') những ô đã đánh
-    để giảm số lượng nhánh cần duyệt ⇒ đỡ lag.
-    """
+def get_candidate_moves(board):
     n = int(len(board) ** 0.5)
     occupied = [i for i, v in enumerate(board) if v != " "]
 
-    # Nếu bàn trống hoàn toàn -> đánh ở giữa
+    # Nếu bàn trống hoàn toàn → đánh giữa
     if not occupied:
         return [len(board) // 2]
+
+    # 🔥 radius phụ thuộc độ dài thắng
+    radius = max(1, WIN_LENGTH - 2)
 
     cand = set()
     for idx in occupied:
         r = idx // n
         c = idx % n
+
         for dr in range(-radius, radius + 1):
             for dc in range(-radius, radius + 1):
                 rr = r + dr
@@ -31,10 +31,6 @@ def get_candidate_moves(board, radius=1):
                     j = rr * n + cc
                     if board[j] == " ":
                         cand.add(j)
-
-    if not cand:
-        # fallback: nếu vì lý do gì đó không có ô nào
-        cand = {i for i, v in enumerate(board) if v == " "}
 
     return list(cand)
 
@@ -111,43 +107,35 @@ def minimax_noAB(board, is_maximizing, AI, PLAYER, depth=0):
         return best
 
 def best_move(board, AI, PLAYER):
-    import math
-    scored_moves = []
 
-    # 1️⃣ Chấm điểm nhanh từng nước bằng heuristic
+    # 1️⃣ AI thắng ngay
     for i in get_candidate_moves(board):
-        if board[i] != " ":
-            continue
-
         board[i] = AI
-        h = heuristic_score(board, AI, PLAYER)
+        if winner(board, AI):
+            board[i] = " "
+            return i
         board[i] = " "
-        scored_moves.append((h, i))
 
-    # 2️⃣ Duyệt nước tốt trước (RẤT QUAN TRỌNG)
-    scored_moves.sort(reverse=True)
+    # 2️⃣ BLOCK nếu player sắp thắng
+    for i in get_candidate_moves(board):
+        board[i] = PLAYER
+        if winner(board, PLAYER):
+            board[i] = " "
+            return i
+        board[i] = " "
 
+    # 3️⃣ Nếu không có tình huống đặc biệt → minimax
     best_score = -math.inf
-    best_move = None
+    best = None
 
-    # 3️⃣ Gọi minimax theo thứ tự đã sắp
-    for _, i in scored_moves:
+    for i in get_candidate_moves(board):
         board[i] = AI
-
-        if USE_ALPHABETA:
-            score = minimax(board, 0, -math.inf, math.inf, False, AI, PLAYER)
-        else:
-            score = minimax_noAB(board, False, AI, PLAYER, 0)
-
+        score = minimax(board, 0, -math.inf, math.inf, False, AI, PLAYER)
         board[i] = " "
 
         if score > best_score:
             best_score = score
-            best_move = i
+            best = i
 
-        # 4️⃣ CẮT SỚM nếu thắng chắc
-        if best_score >= 1:
-            break
-
-    return best_move
+    return best
 
