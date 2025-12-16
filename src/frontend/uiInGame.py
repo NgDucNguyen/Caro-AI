@@ -45,12 +45,13 @@ else:
     features.ALGORITHM_MODE = "none"
     
 # ⚡ Depth động theo kích thước bàn
-if BOARD_N <= 3:
-    features.set_search_depth(9)
-elif BOARD_N <= 5:
-    features.set_search_depth(4)
-else:
-    features.set_search_depth(3)
+# if BOARD_N <= 3:
+#     features.set_search_depth(9)
+# elif BOARD_N <= 5:
+#     features.set_search_depth(4)
+# else:
+#     features.set_search_depth(3)
+features.set_search_depth(DEPTH)
 
 
 # Nếu chơi PVP thi tat AI

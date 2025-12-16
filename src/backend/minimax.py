@@ -49,7 +49,18 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
     if is_maximizing:  
         # Lượt của AI
         max_eval = -math.inf
-        for i in get_candidate_moves(board):
+        moves = get_candidate_moves(board)
+        if depth == 0:
+            moves.sort(
+                key=lambda i: heuristic_score(
+                    board[:i] + [AI] + board[i+1:], AI, PLAYER
+                ),
+                reverse=True
+            )
+            moves = moves[:6]
+            
+
+        for i in moves:
             board[i] = AI
             eval = minimax(board, depth + 1, alpha, beta, False, AI, PLAYER)
             board[i] = " "
@@ -58,8 +69,8 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
             alpha = max(alpha, eval)
 
             # 🔥 AI thắng chắc thì dừng
-            if max_eval >= 1:
-                return max_eval
+            if max_eval ==1:
+                return 1
 
             if beta <= alpha:
                 break
@@ -130,7 +141,11 @@ def best_move(board, AI, PLAYER):
 
     for i in get_candidate_moves(board):
         board[i] = AI
-        score = minimax(board, 0, -math.inf, math.inf, False, AI, PLAYER)
+        if USE_ALPHABETA:
+            score = minimax(board, 0, -math.inf, math.inf, False, AI, PLAYER)
+        else:
+            score = minimax_noAB(board, False, AI, PLAYER, 0)
+
         board[i] = " "
 
         if score > best_score:
