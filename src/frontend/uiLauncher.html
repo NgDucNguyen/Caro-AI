@@ -97,12 +97,6 @@
         </select>
       </div>
 
-      <div class="row">
-        <label for="show_chart">Hiện biểu đồ</label>
-        <input id="show_chart" type="checkbox" style="flex: 0; width: 20px; height: 20px; cursor: pointer;" />
-        <span style="font-size: 12px; color: #888; margin-left: 10px;">(Sau khi hết trận)</span>
-      </div>
-
       <!-- >>> THÊM: lựa chọn người chơi là X hay O -->
       <div class="row">
         <label>Đi quân</label>
@@ -144,8 +138,6 @@
           const algo = document.getElementById("algo").value;
           const depth = parseInt(document.getElementById("depth").value) || 4;
 
-          const show_chart = document.getElementById("show_chart").checked;
-
           try {
             const res = await pycall(
               "start_game",
@@ -154,8 +146,7 @@
               winlen,
               player,
               algo,
-              depth,
-              show_chart
+              depth
             );
             if (!res) alert("Không nhận được phản hồi từ API launcher");
             else if (res.error) alert("Lỗi: " + res.error);
