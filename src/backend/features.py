@@ -1,7 +1,14 @@
-import pygame, sys, time, random, os
+import pygame, sys, time, random, os, csv
 from backend.game import winner, is_full
 from backend.minimax import best_move
 import backend.minimax as minimax_engine
+
+current_dir = os.path.dirname(os.path.abspath(__file__)) 
+project_root = os.path.dirname(os.path.dirname(current_dir)) # Lùi ra thư mục Caro-AI
+LOG_FILE_PATH = os.path.join(project_root, "ai_performance_log.csv")
+
+# Mã phiên chơi hiện tại (dùng để phân biệt các lần chơi khác nhau trong log)
+GAME_SESSION_ID = str(int(time.time()))
 
 # Game state
 BOARD_N = 3
@@ -44,6 +51,8 @@ def init_board(size,winlen):
     global board, move_history, game_over, winner_text, highlight_cells
     global BOARD_N, WIN_LENGTH, player_turn
 
+    GAME_SESSION_ID = str(int(time.time()))
+
     BOARD_N = size
     WIN_LENGTH = winlen
 
@@ -61,6 +70,7 @@ def init_board(size,winlen):
 def reset_game():
     global board, move_history, game_over, winner_text, player_turn, highlight_cells
     global ai_time_log,ai_total_time
+    GAME_SESSION_ID = str(int(time.time()))
     ai_time_log = []
     ai_total_time = 0.0
     
@@ -194,6 +204,25 @@ def apply_ai_move():
         scores["D"] += 1
 
     player_turn = True
+
+    try:
+        # Lấy độ sâu hiện tại (để vẽ biểu đồ so sánh)
+        cur_depth = minimax_engine.MAX_DEPTH if ALGORITHM_MODE != "none" else 0
+        
+        # Kiểm tra file có tồn tại không để ghi tiêu đề
+        file_exists = os.path.isfile(LOG_FILE_PATH)
+        
+        with open(LOG_FILE_PATH, mode='a', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            # Nếu file mới tinh thì ghi tiêu đề cột
+            if not file_exists:
+                writer.writerow(["GameID", "Turn", "Depth", "BoardSize", "Time(s)"])
+            
+            # Ghi dữ liệu: ID, Lượt, Depth, Size, Thời gian
+            writer.writerow([GAME_SESSION_ID, len(move_history), cur_depth, BOARD_N, round(ai_last_think_time, 5)])
+    except Exception as e:
+        print(f"Lỗi ghi log: {e}")
+    
     return move
 
 def set_algorithm(use_ab: bool):
