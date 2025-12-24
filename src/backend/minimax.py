@@ -1,6 +1,6 @@
 import math
 from backend.game import winner, is_full, evaluate, heuristic_score, WIN_LENGTH
-
+TRANSPOSITION = {}
 USE_ALPHABETA = True #Mặc định bật 
 MAX_DEPTH = None
 
@@ -36,6 +36,9 @@ def get_candidate_moves(board):
 
 
 def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
+    key = (tuple(board), depth, is_maximizing)
+    if key in TRANSPOSITION:
+        return TRANSPOSITION[key]
     score = evaluate(board, AI, PLAYER)
 
     # Nếu đã thắng / thua / hòa -> trả về ngay
@@ -57,7 +60,7 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
                 ),
                 reverse=True
             )
-            moves = moves[:6]
+            moves = moves[: max(4, WIN_LENGTH + 1)]
             
 
         for i in moves:
@@ -74,6 +77,7 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
 
             if beta <= alpha:
                 break
+        TRANSPOSITION[key] = max_eval
         return max_eval
 
     else:  
@@ -87,6 +91,7 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
             beta = min(beta, eval)
             if beta <= alpha:
                 break  # Cắt tỉa Alpha
+        TRANSPOSITION[key] = min_eval
         return min_eval
 
 # minimax ko có alpha-beta

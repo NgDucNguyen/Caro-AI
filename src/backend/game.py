@@ -63,65 +63,62 @@ def evaluate(b,AI,PLAYER):
         return 0
 
 def heuristic_score(b, AI, PLAYER):
-    """
-    Heuristic cho bàn N×N:
-    + Cộng điểm cho các chuỗi gần thắng của AI
-    + Trừ điểm cho chuỗi gần thắng của người chơi
-    """
-    # Nếu bạn đã có biến BOARD_N, WIN_LENGTH ở đầu file thì dùng lại
-    try:
-        n = BOARD_N
-        k = WIN_LENGTH
-    except NameError:
-        # fallback cho 3x3
-        n = 3
-        k = 3
+    n = BOARD_N
+    k = WIN_LENGTH
 
     def idx(r, c):
         return r * n + c
 
-    directions = [
-        (1, 0),   # dọc
-        (0, 1),   # ngang
-        (1, 1),   # chéo xuống phải
-        (1, -1),  # chéo xuống trái
-    ]
+    directions = [(1,0),(0,1),(1,1),(1,-1)]
 
     score = 0
 
     for r in range(n):
         for c in range(n):
             for dr, dc in directions:
-                end_r = r + (k - 1) * dr
-                end_c = c + (k - 1) * dc
-                if not (0 <= end_r < n and 0 <= end_c < n):
-                    continue
-
                 cells = []
-                for step in range(k):
-                    rr = r + step * dr
-                    cc = c + step * dc
-                    cells.append(idx(rr, cc))
+                for t in range(k):
+                    rr = r + t*dr
+                    cc = c + t*dc
+                    if not (0 <= rr < n and 0 <= cc < n):
+                        break
+                    cells.append(idx(rr,cc))
+                if len(cells) < k:
+                    continue
 
                 line = [b[p] for p in cells]
 
-                # Nếu cả AI và PLAYER cùng có trong đoạn này thì bỏ
                 if AI in line and PLAYER in line:
                     continue
 
                 ai_cnt = line.count(AI)
                 pl_cnt = line.count(PLAYER)
 
+                # kiểm tra độ mở 2 đầu
+                left_block = True
+                right_block = True
+
+                lr = r - dr
+                lc = c - dc
+                if 0 <= lr < n and 0 <= lc < n:
+                    left_block = (b[idx(lr,lc)] != " ")
+
+                rr = r + k*dr
+                rc = c + k*dc
+                if 0 <= rr < n and 0 <= rc < n:
+                    right_block = (b[idx(rr,rc)] != " ")
+
+                open_ends = 2 - int(left_block) - int(right_block)
+
                 if ai_cnt > 0 and pl_cnt == 0:
-                    if ai_cnt == WIN_LENGTH:
+                    if ai_cnt == k:
                         return 10_000_000
-                    score += 10 ** ai_cnt
+                    score += (10 ** ai_cnt) * open_ends
 
                 elif pl_cnt > 0 and ai_cnt == 0:
-                    if pl_cnt == WIN_LENGTH:
+                    if pl_cnt == k:
                         return -10_000_000
-                    score -= 10 ** pl_cnt
-
+                    score -= (10 ** pl_cnt) * open_ends
 
     return score
 

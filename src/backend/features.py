@@ -63,6 +63,7 @@ def reset_game():
     global ai_time_log,ai_total_time
     ai_time_log = []
     ai_total_time = 0.0
+    ai_last_think_time = 0.0 
     
     board = [" "] * (BOARD_N * BOARD_N)
     move_history = []
@@ -159,7 +160,7 @@ def apply_ai_move():
     if game_over or player_turn:
         return None
     try:
-        start = time.time()
+        start = time.perf_counter() 
         if ALGORITHM_MODE == "none":
            # Đánh random
            empties = [i for i, v in enumerate(board) if v == " "]
@@ -169,7 +170,7 @@ def apply_ai_move():
            # Minimax hoặc Alpha-Beta
            move = best_move(board, AI, PLAYER)
 
-        ai_last_think_time = time.time() - start
+        ai_last_think_time = time.perf_counter() - start  
         ai_time_log.append(ai_last_think_time)
         ai_total_time += ai_last_think_time
         print(f"[AI] Thinking time: {ai_last_think_time:.5f}s")
