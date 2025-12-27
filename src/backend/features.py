@@ -20,6 +20,7 @@ ALGORITHM_MODE = "alpha"   # alpha, minimax, none
 #bien thoi gian
 ai_last_think_time = 0.0
 ai_time_log = []
+ai_nodes_log = []
 ai_total_time = 0.0
 
 #Ký hiệu người chơi Ai mặc định
@@ -60,8 +61,9 @@ def init_board(size,winlen):
 
 def reset_game():
     global board, move_history, game_over, winner_text, player_turn, highlight_cells
-    global ai_time_log,ai_total_time
+    global ai_time_log,ai_total_time, ai_nodes_log
     ai_time_log = []
+    ai_nodes_log = []
     ai_total_time = 0.0
     ai_last_think_time = 0.0 
     
@@ -129,7 +131,6 @@ def get_winning_cells(b, mark):
 
 
 def apply_player_move(i):
-    """Attempt to place X at i. Returns True if move accepted."""
     global player_turn, game_over, winner_text
     if game_over or board[i] != " ":
         return False
@@ -153,37 +154,60 @@ def apply_player_move(i):
     return True
 
 def apply_ai_move():
-    """Make AI move (O). Returns move index or None."""
     global player_turn, game_over, winner_text
-    global ai_time_log,ai_last_think_time,ai_total_time
+    global ai_time_log, ai_last_think_time, ai_total_time, ai_nodes_log 
     global ALGORITHM_MODE
+
     if game_over or player_turn:
         return None
+    
     try:
-        start = time.perf_counter() 
+        start = time.perf_counter() # Bắt đầu bấm giờ
+        
+        if ALGORITHM_MODE != "none":
+            minimax_engine.NODES_VISITED = 0
+
+        move = None
+
         if ALGORITHM_MODE == "none":
-           # Đánh random
-           empties = [i for i, v in enumerate(board) if v == " "]
-           move = random.choice(empties) if empties else None
-
+            # Đánh random
+            empties = [i for i, v in enumerate(board) if v == " "]
+            move = random.choice(empties) if empties else None
+            # Random thì số node = 0
+            current_nodes = 0
         else:
-           # Minimax hoặc Alpha-Beta
-           move = best_move(board, AI, PLAYER)
+            # Minimax hoặc Alpha-Beta
+            move = best_move(board, AI, PLAYER)
+            # Lấy số node đã đếm được từ module
+            current_nodes = minimax_engine.NODES_VISITED
 
-        ai_last_think_time = time.perf_counter() - start  
+        # Tính toán thời gian
+        ai_last_think_time = time.perf_counter() - start
+        
+        # Lưu thông tin vào log
         ai_time_log.append(ai_last_think_time)
+        
+        # Lưu số node (Nếu random hoặc đi nhanh thì là 0)
+        if ALGORITHM_MODE == "none":
+             ai_nodes_log.append(0)
+        else:
+             ai_nodes_log.append(current_nodes)
+             
         ai_total_time += ai_last_think_time
-        print(f"[AI] Thinking time: {ai_last_think_time:.5f}s")
-    except Exception:
-        empties = [i for i,v in enumerate(board) if v == " "]
-        move = random.choice(empties) if empties else None
+        
+        print(f"[AI] Time: {ai_last_think_time:.5f}s | Nodes: {current_nodes}")
 
+    except Exception as e:
+        print("Error in AI move:", e)
+        empties = [i for i, v in enumerate(board) if v == " "]
+        move = random.choice(empties) if empties else None
+    
     if move is None:
         return None
-
+    
     board[move] = AI
     move_history.append(move)
-
+    
     if winner(board, AI):
         highlight_cells[:] = get_winning_cells(board, AI)
         winner_text = f"Computer ({AI}) wins!"
@@ -193,7 +217,7 @@ def apply_ai_move():
         winner_text = "Draw!"
         game_over = True
         scores["D"] += 1
-
+    
     player_turn = True
     return move
 

@@ -215,8 +215,16 @@ def draw_panel():
     screen.blit(st.render("AI Thinking Log:", True, (80,80,80)), (WINDOW_W - 320, log_y))
     log_y += 30
 
-    for idx, t in enumerate(features.ai_time_log[-8:]):
-        log_line = st.render(f"{idx+1}. {t:.6f}s", True, (100,100,100))
+    rec_times = features.ai_time_log[-8:]
+    # Kiểm tra xem có list nodes chưa để tránh lỗi
+    if hasattr(features, 'ai_nodes_log'):
+        rec_nodes = features.ai_nodes_log[-8:]
+    else:
+        rec_nodes = [0] * len(rec_times)
+
+    for idx, (t, n) in enumerate(zip(rec_times, rec_nodes)):
+        # Hiển thị: 1. 1.205s | 1540 nodes
+        log_line = st.render(f"{idx+1}. {t:.6f}s | {n} nodes", True, (100,100,100))
         screen.blit(log_line, (WINDOW_W - 320, log_y))
         log_y += 25
 

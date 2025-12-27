@@ -4,6 +4,8 @@ TRANSPOSITION = {}
 USE_ALPHABETA = True #Mặc định bật 
 MAX_DEPTH = None
 
+NODES_VISITED = 0
+
 PLAYER = "X"
 AI = "O" if PLAYER == "X" else "X"
 
@@ -39,6 +41,8 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
     key = (tuple(board), depth, is_maximizing)
     if key in TRANSPOSITION:
         return TRANSPOSITION[key]
+    global NODES_VISITED
+    NODES_VISITED += 1
     score = evaluate(board, AI, PLAYER)
 
     # Nếu đã thắng / thua / hòa -> trả về ngay
@@ -97,6 +101,8 @@ def minimax(board, depth, alpha, beta, is_maximizing,AI,PLAYER):
 # minimax ko có alpha-beta
 def minimax_noAB(board, is_maximizing, AI, PLAYER, depth=0):
     score = evaluate(board, AI, PLAYER)
+    global NODES_VISITED
+    NODES_VISITED += 1
 
     if score != 0 or is_full(board):
         return score
